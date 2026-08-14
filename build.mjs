@@ -13,8 +13,11 @@ await build({
   target: "es2020",
   outfile: "dist/index.js",
   minify: true,
+  banner: {
+    js: "(() => {"
+  },
   footer: {
-    js: "return plugin.default;"
+    js: "return plugin.default;\n})();"
   },
   external: [
     "@vendetta/metro",
