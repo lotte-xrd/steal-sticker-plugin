@@ -1,0 +1,15 @@
+{
+    "name": "StealSticker",
+    "description": "Save Discord stickers directly to your Camera Roll.",
+    "authors": [
+        {
+            "name": "Lotte",
+            "id": "1462536039708233925"
+        }
+    ],
+    "main": "index.js",
+    "vendetta": {
+        "icon": "ic_sticker_24px"
+    },
+    "hash": "4b9011d2324a5ee6a2ab4e0089da03a4392262bc3ed599634589f707447a1756"
+}
