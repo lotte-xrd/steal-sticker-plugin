@@ -3,9 +3,7 @@ import { after, before } from "@vendetta/patcher";
 import { ErrorBoundary, Forms } from "@vendetta/ui/components";
 import { findByProps } from "@vendetta/metro";
 import StealButtons, { StickerNode } from "../ui/components/StealButtons";
-import { LazyActionSheet, ActionSheetComponent } from "../modules";
-
-const FormDivider = Forms?.FormDivider;
+import { getLazyActionSheet, getActionSheetComponent } from "../modules";
 
 export function findSticker(x: any, depth = 0, seen = new Set()): StickerNode | null {
     if (!x || typeof x !== "object" || seen.has(x) || depth > 4) return null;
@@ -76,6 +74,7 @@ export function injectButtons(res: any, stickerNode: StickerNode): boolean {
     if (alreadyInjected) return true;
 
     const elementsToInject: any[] = [];
+    const FormDivider = Forms?.FormDivider;
     if (FormDivider) {
         elementsToInject.push(React.createElement(FormDivider, { key: "steal-divider", style: { marginLeft: 0, marginTop: 16, marginBottom: 8 } }));
     }
@@ -96,6 +95,7 @@ export default function patchMessageStickerActionSheet() {
     const patches: (() => void)[] = [];
 
     try {
+        const LazyActionSheet = getLazyActionSheet();
         // Strategy 1: Patch LazyActionSheet.openLazy
         if (LazyActionSheet?.openLazy) {
             const unpatchLazy = before("openLazy", LazyActionSheet, ([lazySheet, name, props]: any[]) => {
@@ -147,6 +147,7 @@ export default function patchMessageStickerActionSheet() {
     } catch {}
 
     try {
+        const ActionSheetComponent = getActionSheetComponent();
         // Strategy 3: Patch global ActionSheet Component as fallback
         if (ActionSheetComponent) {
             const target = ActionSheetComponent.render ? ActionSheetComponent : ActionSheetComponent;

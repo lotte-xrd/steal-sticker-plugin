@@ -2,7 +2,7 @@ import { clipboard, React } from "@vendetta/metro/common";
 import { Button } from "@vendetta/ui/components";
 import { getAssetIDByName } from "@vendetta/ui/assets";
 import { showToast } from "@vendetta/ui/toasts";
-import { LazyActionSheet, downloadMediaAsset } from "../../modules";
+import { getLazyActionSheet, getDownloadMediaAsset } from "../../modules";
 
 export interface StickerNode {
     id?: string;
@@ -27,6 +27,9 @@ export default function StealButtons({ stickerNode }: { stickerNode: StickerNode
 
     const handleSave = () => {
         try {
+            const downloadMediaAsset = getDownloadMediaAsset();
+            const LazyActionSheet = getLazyActionSheet();
+
             if (typeof downloadMediaAsset === "function") {
                 downloadMediaAsset(url, isGif ? 1 : 0);
                 LazyActionSheet?.hideActionSheet?.();
@@ -41,6 +44,7 @@ export default function StealButtons({ stickerNode }: { stickerNode: StickerNode
 
     const handleCopyUrl = () => {
         try {
+            const LazyActionSheet = getLazyActionSheet();
             clipboard.setString(url);
             LazyActionSheet?.hideActionSheet?.();
             showToast(`Copied ${name}'s URL`, getAssetIDByName("ic_copy_message_link"));
@@ -51,6 +55,7 @@ export default function StealButtons({ stickerNode }: { stickerNode: StickerNode
 
     const handleCopyImage = () => {
         try {
+            const LazyActionSheet = getLazyActionSheet();
             const cb = clipboard as any;
             if (typeof cb?.setImage === "function") {
                 cb.setImage(url);

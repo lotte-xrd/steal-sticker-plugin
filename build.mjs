@@ -17,7 +17,7 @@ await build({
     js: "(() => {"
   },
   footer: {
-    js: "return plugin.default;\n})();"
+    js: "return plugin.default;\n})()"
   },
   external: [
     "@vendetta/metro",
@@ -29,7 +29,12 @@ await build({
   ]
 });
 
-const js = await readFile("dist/index.js");
+let js = (await readFile("dist/index.js", "utf8")).trim();
+if (js.endsWith(";")) {
+  js = js.slice(0, -1).trim();
+}
+await writeFile("dist/index.js", js);
+
 const hash = createHash("sha256").update(js).digest("hex");
 
 manifest.main = "dist/index.js";
