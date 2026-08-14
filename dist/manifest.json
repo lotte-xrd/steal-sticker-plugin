@@ -1,6 +1,6 @@
 {
     "name": "StealSticker",
-    "description": "Steal Discord stickers on mobile with ease.",
+    "description": "Save Discord stickers directly to your Camera Roll.",
     "authors": [
         {
             "name": "Lotte",
@@ -11,5 +11,5 @@
     "vendetta": {
         "icon": "ic_sticker_24px"
     },
-    "hash": "14f7a1afdc07434ae3cd86f87a2b3123af64abb3fbc5ccc25ae89b3fcccfb0f9"
+    "hash": "21d890d061b90908fbb50554ab494261755da20938e363c7f3addcd72acb80f1"
 }

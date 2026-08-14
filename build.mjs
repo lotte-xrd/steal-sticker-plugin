@@ -8,11 +8,22 @@ await build({
   entryPoints: ["src/index.ts"],
   bundle: true,
   format: "iife",
+  globalName: "plugin",
   platform: "neutral",
   target: "es2020",
   outfile: "dist/index.js",
   minify: true,
-  external: ["@vendetta/metro", "@vendetta/metro/common", "@vendetta/patcher", "@vendetta/ui/components", "@vendetta/ui/assets", "@vendetta/ui/toasts"]
+  footer: {
+    js: "return plugin.default;"
+  },
+  external: [
+    "@vendetta/metro",
+    "@vendetta/metro/common",
+    "@vendetta/patcher",
+    "@vendetta/ui/components",
+    "@vendetta/ui/assets",
+    "@vendetta/ui/toasts"
+  ]
 });
 
 const js = await readFile("dist/index.js");
