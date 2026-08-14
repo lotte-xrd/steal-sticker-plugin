@@ -22,6 +22,9 @@ export default function StealButtons({ stickerNode }: { stickerNode: StickerNode
     const formatType = stickerNode?.format_type ?? stickerNode?.formatType ?? 1;
     const isGif = formatType === 4 || url.toLowerCase().includes(".gif");
 
+    const btnColor = Button?.Colors?.BRAND ?? Button?.Colors?.PRIMARY ?? "brand";
+    const btnSize = Button?.Sizes?.SMALL ?? "small";
+
     const handleSave = () => {
         try {
             if (typeof downloadMediaAsset === "function") {
@@ -49,11 +52,11 @@ export default function StealButtons({ stickerNode }: { stickerNode: StickerNode
     const handleCopyImage = () => {
         try {
             const cb = clipboard as any;
-            if (typeof cb.setImage === "function") {
+            if (typeof cb?.setImage === "function") {
                 cb.setImage(url);
                 LazyActionSheet?.hideActionSheet?.();
                 showToast(`Copied ${name}'s image`, getAssetIDByName("toast_image_saved"));
-            } else if (typeof cb.copyImage === "function") {
+            } else if (typeof cb?.copyImage === "function") {
                 cb.copyImage(url);
                 LazyActionSheet?.hideActionSheet?.();
                 showToast(`Copied ${name}'s image`, getAssetIDByName("toast_image_saved"));
@@ -72,25 +75,24 @@ export default function StealButtons({ stickerNode }: { stickerNode: StickerNode
         null,
         React.createElement(Button, {
             text: "Copy sticker URL",
-            color: Button.Colors.BRAND,
-            size: Button.Sizes.SMALL,
+            color: btnColor,
+            size: btnSize,
             onPress: handleCopyUrl,
             style: { marginTop: 12 },
         }),
         React.createElement(Button, {
             text: "Copy image to clipboard",
-            color: Button.Colors.BRAND,
-            size: Button.Sizes.SMALL,
+            color: btnColor,
+            size: btnSize,
             onPress: handleCopyImage,
             style: { marginTop: 8 },
         }),
         React.createElement(Button, {
             text: "Save sticker to Camera Roll",
-            color: Button.Colors.BRAND,
-            size: Button.Sizes.SMALL,
+            color: btnColor,
+            size: btnSize,
             onPress: handleSave,
             style: { marginTop: 8 },
         })
     );
 }
-

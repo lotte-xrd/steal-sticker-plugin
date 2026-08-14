@@ -5,7 +5,7 @@ import { findByProps } from "@vendetta/metro";
 import StealButtons, { StickerNode } from "../ui/components/StealButtons";
 import { LazyActionSheet, ActionSheetComponent } from "../modules";
 
-const { FormDivider } = Forms;
+const FormDivider = Forms?.FormDivider;
 
 export function findSticker(x: any, depth = 0, seen = new Set()): StickerNode | null {
     if (!x || typeof x !== "object" || seen.has(x) || depth > 4) return null;
@@ -75,12 +75,17 @@ export function injectButtons(res: any, stickerNode: StickerNode): boolean {
 
     if (alreadyInjected) return true;
 
+    const elementsToInject: any[] = [];
+    if (FormDivider) {
+        elementsToInject.push(React.createElement(FormDivider, { key: "steal-divider", style: { marginLeft: 0, marginTop: 16, marginBottom: 8 } }));
+    }
+    elementsToInject.push(React.createElement(StealButtons, { key: "steal-buttons-inner", stickerNode }));
+
     targetArray.push(
         React.createElement(
             ErrorBoundary,
             { key: "steal-sticker-buttons" },
-            React.createElement(FormDivider, { style: { marginLeft: 0, marginTop: 16, marginBottom: 8 } }),
-            React.createElement(StealButtons, { stickerNode })
+            ...elementsToInject
         )
     );
 
@@ -90,62 +95,76 @@ export function injectButtons(res: any, stickerNode: StickerNode): boolean {
 export default function patchMessageStickerActionSheet() {
     const patches: (() => void)[] = [];
 
-    // Strategy 1: Patch LazyActionSheet.openLazy
-    if (LazyActionSheet?.openLazy) {
-        const unpatchLazy = before("openLazy", LazyActionSheet, ([lazySheet, name, props]: any[]) => {
-            const isStickerSheet = typeof name === "string" && (name.includes("Sticker") || name.includes("sticker"));
-            const stickerFromProps = findSticker(props);
+    try {
+        // Strategy 1: Patch LazyActionSheet.openLazy
+        if (LazyActionSheet?.openLazy) {
+            const unpatchLazy = before("openLazy", LazyActionSheet, ([lazySheet, name, props]: any[]) => {
+                try {
+                    const isStickerSheet = typeof name === "string" && (name.toLowerCase().includes("sticker"));
+                    const stickerFromProps = findSticker(props);
 
-            if (!isStickerSheet && !stickerFromProps) return;
+                    if (!isStickerSheet && !stickerFromProps) return;
 
-            if (lazySheet && typeof lazySheet.then === "function") {
-                lazySheet.then((module: any) => {
-                    if (!module) return;
-                    const targetMethod = module.default ? "default" : module.render ? "render" : null;
-                    if (!targetMethod) return;
+                    if (lazySheet && typeof lazySheet.then === "function") {
+                        lazySheet.then((module: any) => {
+                            if (!module) return;
+                            const targetMethod = module.default ? "default" : module.render ? "render" : null;
+                            if (!targetMethod) return;
 
-                    patches.push(
-                        after(targetMethod, module, ([args]: any[], res: any) => {
-                            const node = findSticker(args) ?? stickerFromProps ?? findSticker(res);
-                            if (node) {
-                                injectButtons(res, node);
-                            }
-                        })
-                    );
-                }).catch(() => {});
-            }
-        });
-        patches.push(unpatchLazy);
-    }
-
-    // Strategy 2: Patch direct GuildDetails / MessageStickerActionSheet module if present
-    const directModule = findByProps("GuildDetails");
-    if (directModule) {
-        patches.push(
-            after("default", directModule, ([args]: any[], res: any) => {
-                const node = findSticker(args) ?? findSticker(res);
-                if (node) {
-                    injectButtons(res, node);
-                }
-            })
-        );
-    }
-
-    // Strategy 3: Patch global ActionSheet Component as fallback
-    if (ActionSheetComponent) {
-        const target = ActionSheetComponent.render ? ActionSheetComponent : ActionSheetComponent;
-        const method = ActionSheetComponent.render ? "render" : "default";
-        if (target[method]) {
-            patches.push(
-                after(method, target, ([props]: any[], res: any) => {
-                    const node = findSticker(props) ?? findSticker(res);
-                    if (node) {
-                        injectButtons(res, node);
+                            patches.push(
+                                after(targetMethod, module, ([args]: any[], res: any) => {
+                                    try {
+                                        const node = findSticker(args) ?? stickerFromProps ?? findSticker(res);
+                                        if (node) {
+                                            injectButtons(res, node);
+                                        }
+                                    } catch {}
+                                })
+                            );
+                        }).catch(() => {});
                     }
+                } catch {}
+            });
+            patches.push(unpatchLazy);
+        }
+    } catch {}
+
+    try {
+        // Strategy 2: Patch direct GuildDetails / MessageStickerActionSheet module if present
+        const directModule = findByProps("GuildDetails");
+        if (directModule) {
+            patches.push(
+                after("default", directModule, ([args]: any[], res: any) => {
+                    try {
+                        const node = findSticker(args) ?? findSticker(res);
+                        if (node) {
+                            injectButtons(res, node);
+                        }
+                    } catch {}
                 })
             );
         }
-    }
+    } catch {}
+
+    try {
+        // Strategy 3: Patch global ActionSheet Component as fallback
+        if (ActionSheetComponent) {
+            const target = ActionSheetComponent.render ? ActionSheetComponent : ActionSheetComponent;
+            const method = ActionSheetComponent.render ? "render" : "default";
+            if (target && typeof target[method] === "function") {
+                patches.push(
+                    after(method, target, ([props]: any[], res: any) => {
+                        try {
+                            const node = findSticker(props) ?? findSticker(res);
+                            if (node) {
+                                injectButtons(res, node);
+                            }
+                        } catch {}
+                    })
+                );
+            }
+        }
+    } catch {}
 
     return () => {
         patches.forEach((unpatch) => {

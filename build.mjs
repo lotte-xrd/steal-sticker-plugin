@@ -30,6 +30,11 @@ await build({
 });
 
 const js = await readFile("dist/index.js");
-manifest.main = "index.js";
-manifest.hash = createHash("sha256").update(js).digest("hex");
-await writeFile("dist/manifest.json", JSON.stringify(manifest, null, 4) + "\n");
+const hash = createHash("sha256").update(js).digest("hex");
+
+manifest.main = "dist/index.js";
+manifest.hash = hash;
+await writeFile("manifest.json", JSON.stringify(manifest, null, 4) + "\n");
+
+const distManifest = { ...manifest, main: "index.js" };
+await writeFile("dist/manifest.json", JSON.stringify(distManifest, null, 4) + "\n");

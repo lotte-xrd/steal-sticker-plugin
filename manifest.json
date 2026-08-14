@@ -7,8 +7,9 @@
             "id": "1462536039708233925"
         }
     ],
-    "main": "src/index.ts",
+    "main": "dist/index.js",
     "vendetta": {
         "icon": "ic_sticker_24px"
-    }
+    },
+    "hash": "0287e1a4d17bf7451dc18cb7c6ffc1049f0caeeb8e69476fab29bd92b2d6b74f"
 }
